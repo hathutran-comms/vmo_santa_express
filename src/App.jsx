@@ -90,7 +90,7 @@ const JUMP_STRENGTH = -8;
 const BASE_PIPE_WIDTH = 90;
 // Gap between pipes (scaled proportionally for all devices)
 // Reduced for higher difficulty - gap is ~26.7% of reference height (200/750)
-const BASE_PIPE_GAP = 185; // Reduced from 280 for harder gameplay
+const BASE_PIPE_GAP = 200; // Reduced from 280 for harder gameplay
 const PIPE_SPEED = 3;
 const BASE_SANTA_SIZE = 100;
 const BASE_SANTA_HITBOX_PADDING = 20; // Reduce hitbox by 20px on each side
