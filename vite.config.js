@@ -26,39 +26,21 @@ export default defineConfig(({ mode }) => {
       dedupe: ['react', 'react-dom'],
     },
     build: {
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: false, // Giữ console.log để debug
-          drop_debugger: true,
-          pure_funcs: ['console.debug', 'console.trace'], // Chỉ xóa debug/trace
-          passes: 2, // Giảm từ 3 xuống 2 để tránh lỗi
-          unsafe: false, // Tắt unsafe để tránh lỗi React
-          unsafe_comps: false,
-          unsafe_math: false,
-          unsafe_methods: false,
-        },
-        format: {
-          comments: false, // Xóa tất cả comments
-          beautify: false, // Không format lại code
-        },
-        mangle: {
-          properties: {
-            regex: /^_/ // Chỉ mangle properties bắt đầu bằng _
-          }
-        },
-      },
+      // Dùng esbuild thay vì terser để tránh lỗi Firestore
+      // esbuild an toàn hơn với Firebase/Firestore
+      minify: 'esbuild',
       sourcemap: false, // Tắt source maps trong production để ẩn code
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            // Tách vendor chunks nhưng đảm bảo React không bị duplicate
+            // Tách vendor chunks nhưng đảm bảo tất cả Firebase modules cùng chunk
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom')) {
-                return 'react-vendor';
-              }
+              // Đảm bảo tất cả Firebase packages cùng một chunk
               if (id.includes('firebase')) {
                 return 'firebase-vendor';
+              }
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'react-vendor';
               }
               // Các dependencies khác
               return 'vendor';
@@ -68,7 +50,7 @@ export default defineConfig(({ mode }) => {
           compact: true,
         },
       },
-      // Tăng chunk size limit để code được minify tốt hơn
+      // Tăng chunk size limit
       chunkSizeWarningLimit: 1000,
     },
     define: {
