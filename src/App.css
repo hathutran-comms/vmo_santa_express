@@ -1,0 +1,256 @@
+.game-wrapper {
+  position: fixed;
+  inset: 0;
+  background-image: url('/assets/bg_loading.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  cursor: url('/assets/chrismast_cursor.cur') 8 3, auto;
+}
+
+.game-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1;
+}
+
+.game-container {
+  /* Dimensions set via inline style from App.jsx */
+  position: relative;
+  max-width: 100%;
+  max-height: 100vh;
+  margin: 0 auto;
+  overflow: hidden;
+  background-image: url('/assets/bg_loading.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: url('/assets/chrismast_cursor.cur') 8 3, auto;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 2;
+  box-shadow: 0 0 calc(30px * var(--scale, 1)) rgba(0, 0, 0, 0.5);
+}
+
+.game-over-darken {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100; /* Below game over overlay (z-index 200) but above game elements */
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.game-snowflakes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 120;
+}
+
+.game-snowflake {
+  position: absolute;
+  top: -10%;
+  width: 8px;
+  height: 8px;
+  background: #FFFACD;
+  border-radius: 50%;
+  box-shadow: 0 0 calc(6px * var(--scale, 1)) rgba(255, 250, 205, 0.7), 
+              0 0 calc(10px * var(--scale, 1)) rgba(255, 250, 205, 0.4);
+  /* Separate fall on top property so sway transform is not overridden */
+  animation: game-snow-fall var(--snow-duration, 10s) linear infinite,
+             game-snow-sway var(--snow-sway, 6s) ease-in-out infinite alternate;
+}
+
+@keyframes game-snow-fall {
+  to {
+    top: 110%;
+  }
+}
+
+@keyframes game-snow-sway {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(var(--snow-drift, 10px), 0, 0); }
+}
+
+.game-container.intro-active {
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Desktop: center game with responsive size */
+@media (min-width: 801px) {
+  .game-container {
+    border: calc(3px * var(--scale, 1)) solid #333;
+  }
+  
+  .game-container.intro-active {
+    border: none;
+  }
+}
+
+/* Mobile: full screen */
+@media (max-width: 800px) {
+  .game-container {
+    max-width: 100vw;
+    max-height: 100vh;
+    border: none;
+  }
+  
+  /* Disable backdrop blur on mobile for performance */
+  .game-wrapper::before {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Disable box-shadow on mobile */
+  .game-container {
+    box-shadow: none;
+  }
+  
+  /* Disable gradient overlay on mobile */
+  .game-container::before {
+    display: none;
+  }
+}
+
+.game-container::before {
+  content: '';
+  position: absolute;
+  bottom: calc(80px * var(--scale, 1));
+  left: 0;
+  right: 0;
+  height: calc(40px * var(--scale, 1));
+  background: linear-gradient(to bottom, transparent, rgba(100, 80, 60, 0.2));
+  z-index: 2;
+  pointer-events: none;
+}
+
+.game-container::after {
+  content: '';
+  position: absolute;
+  bottom: calc(80px * var(--scale, 1));
+  left: 0;
+  right: 0;
+  height: 0;
+  background: transparent;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.branch-logo-global {
+  position: fixed;
+  top: calc(12px * var(--game-scale, 1));
+  right: calc(12px * var(--game-scale, 1));
+  width: calc(160px * var(--game-scale, 1));
+  max-width: 30vw;
+  height: auto;
+  z-index: 30000; /* Above loading/enter/intro overlays */
+  pointer-events: none;
+  object-fit: contain;
+}
+
+.branch-logo-game {
+  position: absolute;
+  top: calc(12px * var(--scale, 1));
+  right: calc(12px * var(--scale, 1));
+  width: calc(100px * var(--scale, 1));
+  max-width: 32vw;
+  height: auto;
+  z-index: 30000;
+  pointer-events: none;
+  object-fit: contain;
+}
+
+.music-toggle-btn {
+  position: absolute;
+  top: calc(12px * var(--scale, 1));
+  left: calc(12px * var(--scale, 1));
+  width: calc(50px * var(--scale, 1));
+  height: calc(50px * var(--scale, 1));
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: url('/assets/chrismast_pointer.cur') 8 3, pointer;
+  z-index: 30000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.music-toggle-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.music-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
+.music-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.leaderboard-btn {
+  position: absolute;
+  top: calc(12px * var(--scale, 1));
+  left: calc(75px * var(--scale, 1));
+  width: calc(50px * var(--scale, 1));
+  height: calc(50px * var(--scale, 1));
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: url('/assets/chrismast_pointer.cur') 8 3, pointer;
+  z-index: 30000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.leaderboard-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.leaderboard-btn:hover {
+  transform: scale(1.1);
+}
+
+.leaderboard-btn:active {
+  transform: scale(0.95);
+}
+
+/* Pointer cursor for interactive elements */
+button,
+a,
+.resume-button,
+.input-box,
+.score-overlay button {
+  cursor: url('/assets/chrismast_pointer.cur') 8 3, pointer;
+}
+/**
+ 
+
+      _                _            _      _                            
+  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
+ / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
+| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
+ \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
+                                                                     |_|
+
+**/

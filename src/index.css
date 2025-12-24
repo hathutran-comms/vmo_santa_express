@@ -1,0 +1,39 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
+  height: 100vh;
+  width: 100vw;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: url('/assets/chrismast_cursor.cur') 15 5, auto;
+}
+
+/* Desktop: center the game container */
+@media (min-width: 801px) {
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Mobile: no centering, full screen */
+@media (max-width: 800px) {
+  body {
+    display: block;
+  }
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}

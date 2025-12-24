@@ -1,0 +1,59 @@
+.santa {
+  position: absolute;
+  left: 15%;
+  width: calc(100px * var(--scale, 1));
+  height: calc(100px * var(--scale, 1));
+  z-index: 10;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  /* GPU acceleration for smoother animation */
+  will-change: transform, top;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+/* Disable transition on mobile for better performance */
+@media (min-width: 801px) {
+  .santa {
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Hitbox visualization - only show when enabled */
+.santa.show-hitbox::before {
+  content: '';
+  position: absolute;
+  top: calc(20px * var(--scale, 1));
+  left: calc(20px * var(--scale, 1));
+  right: calc(10px * var(--scale, 1));
+  bottom: calc(10px * var(--scale, 1));
+  border: calc(2px * var(--scale, 1)) solid rgba(255, 0, 0, 0.8);
+  background-color: rgba(255, 0, 0, 0.2);
+  box-shadow: 0 0 calc(10px * var(--scale, 1)) rgba(255, 0, 0, 0.6);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.santa img {
+  pointer-events: none;
+}
+
+.santa-dead {
+  animation: santa-spin 1s linear infinite;
+}
+
+@keyframes santa-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile styles removed - now handled by CSS variables */

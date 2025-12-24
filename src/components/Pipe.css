@@ -1,0 +1,32 @@
+.pipe {
+  position: absolute;
+  width: calc(90px * var(--scale, 1));
+  z-index: 5;
+  overflow: visible;
+  pointer-events: none;
+  /* GPU acceleration */
+  will-change: transform, left;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Hitbox visualization - only show when enabled */
+.pipe.show-hitbox {
+  border: calc(2px * var(--scale, 1)) solid rgba(0, 255, 0, 0.6);
+  box-shadow: 0 0 calc(10px * var(--scale, 1)) rgba(0, 255, 0, 0.4);
+}
+
+.pipe-top {
+  top: 0;
+}
+
+.pipe-bottom {
+  bottom: 0;
+}
+
+.pipe-image {
+  display: block;
+  /* Use cover to maintain aspect ratio and fill the container */
+  image-rendering: auto;
+}

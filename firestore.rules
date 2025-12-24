@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ============================================
+    // Collection: leaderboard2
+    // ============================================
+    // CHỐNG GIAN LẬN: Client chỉ được đọc, không được ghi
+    // Chỉ Cloud Function (dùng Admin SDK) mới có quyền ghi
+    match /leaderboard2/{vmoId} {
+      // Cho phép đọc để hiển thị leaderboard và high score
+      // Bất kỳ ai cũng có thể đọc (public read)
+      allow read: if true;
+      
+      // CHẶN tất cả write từ client
+      // Cloud Function không bị ảnh hưởng bởi rules này vì dùng Admin SDK
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // ============================================
+    // Các collection khác
+    // ============================================
+    // Chặn tất cả collection khác để bảo mật
+    // Nếu cần thêm collection mới, thêm rule riêng ở trên
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

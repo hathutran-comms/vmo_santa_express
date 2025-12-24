@@ -1,0 +1,120 @@
+.main-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Desktop: match game container size using CSS variables */
+@media (min-width: 801px) {
+  .main-menu {
+    max-width: calc(var(--game-width, 500px) * 1.6);
+    width: 50vw;
+    max-width: min(50vw, calc(var(--game-width, 500px) * 1.6));
+    height: calc(var(--game-height, 750px) * 0.933);
+    margin: 0 auto;
+    margin-top: calc((100vh - calc(var(--game-height, 750px) * 0.933)) / 2);
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 calc(30px * var(--scale, 1)) rgba(0, 0, 0, 0.5);
+  }
+}
+
+.menu-background {
+  width: 100%;
+  height: 100%;
+  background-image: url('/assets/Buttons/xmas_game_gui_background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(30px * var(--scale, 1));
+  padding: calc(40px * var(--scale, 1));
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.menu-button:hover {
+  transform: scale(1.15) translateZ(0);
+  filter: drop-shadow(0 8px 16px rgba(255, 165, 0, 0.6)) brightness(1.2);
+  animation: pulse-glow 0.8s ease-in-out infinite;
+}
+
+/* Disable hover on mobile/touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .menu-button:hover {
+    transform: translateZ(0);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    animation: none;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 8px 16px rgba(255, 165, 0, 0.6)) brightness(1.2);
+  }
+  50% {
+    filter: drop-shadow(0 8px 20px rgba(255, 200, 0, 0.9)) brightness(1.3);
+  }
+}
+
+.menu-button:active {
+  transform: scale(0.98) translateZ(0);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) brightness(0.9);
+}
+
+.menu-button img {
+  width: calc(280px * var(--scale, 1));
+  max-width: min(70vw, calc(280px * var(--scale, 1)));
+  height: auto;
+  display: block;
+  image-rendering: auto;
+}
+
+/* Responsive design - now handled by CSS variables */
+@media (max-width: 768px) {
+  .menu-content {
+    gap: calc(20px * var(--scale, 1));
+    padding: calc(20px * var(--scale, 1));
+  }
+  
+  .menu-button img {
+    width: calc(220px * var(--scale, 1));
+    max-width: min(60vw, calc(220px * var(--scale, 1)));
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-button img {
+    width: calc(180px * var(--scale, 1));
+    max-width: min(50vw, calc(180px * var(--scale, 1)));
+  }
+  
+  .menu-content {
+    gap: calc(15px * var(--scale, 1));
+  }
+}

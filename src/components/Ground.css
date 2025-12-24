@@ -1,0 +1,67 @@
+.ground-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(80px * var(--scale, 1));
+  overflow: hidden;
+  z-index: 100;
+  pointer-events: none;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.ground-tiles {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  /* Double width for seamless loop */
+  width: 200%;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.ground-tiles.moving {
+  animation: groundScroll 1.5s linear infinite;
+}
+
+@keyframes groundScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-1 * 336px * var(--scale, 1)));
+  }
+}
+
+.ground-tile {
+  position: absolute;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.ground-decor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ground-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent);
+  z-index: 1;
+  pointer-events: none;
+}

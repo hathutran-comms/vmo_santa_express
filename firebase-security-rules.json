@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "leaderboard": {
+      ".read": true,
+      "$vmoId": {
+        ".write": true
+      }
+    }
+  }
+}

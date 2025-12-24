@@ -1,0 +1,50 @@
+.gift {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(60px * var(--scale, 1));
+  height: calc(60px * var(--scale, 1));
+  z-index: 8;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  animation: gift-fall 0.5s ease-in;
+  pointer-events: none;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.gift img {
+  pointer-events: none;
+}
+
+.gift.breaking {
+  animation: gift-break 0.3s ease-out forwards;
+}
+
+@keyframes gift-fall {
+  from {
+    transform: translateY(calc(-20px * var(--scale, 1))) rotate(0deg);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes gift-break {
+  from {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+/* Mobile styles removed - now handled by CSS variables */

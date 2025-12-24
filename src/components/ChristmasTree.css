@@ -1,0 +1,24 @@
+.christmas-tree {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  /* GPU acceleration */
+  will-change: transform, left;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.christmas-tree.show-hitbox {
+  border: 2px solid rgba(255, 165, 0, 0.3);
+}
+
+.christmas-tree img {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}

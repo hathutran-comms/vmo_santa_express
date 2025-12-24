@@ -1,0 +1,24 @@
+.floating-giftbox {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  animation: floatUpDown 3s ease-in-out infinite;
+  /* GPU acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0) translateZ(0);
+  }
+  50% {
+    transform: translateY(calc(-20px * var(--scale, 1))) translateZ(0);
+  }
+}
+
+.floating-giftbox img {
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
