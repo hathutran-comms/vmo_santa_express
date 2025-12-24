@@ -21,6 +21,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     base: '/',
+    resolve: {
+      // Đảm bảo chỉ có 1 instance React
+      dedupe: ['react', 'react-dom'],
+    },
     build: {
       minify: 'terser',
       terserOptions: {
@@ -28,11 +32,11 @@ export default defineConfig(({ mode }) => {
           drop_console: false, // Giữ console.log để debug
           drop_debugger: true,
           pure_funcs: ['console.debug', 'console.trace'], // Chỉ xóa debug/trace
-          passes: 3, // Nhiều lần minify để code nhỏ hơn
-          unsafe: true, // Cho phép unsafe optimizations
-          unsafe_comps: true,
-          unsafe_math: true,
-          unsafe_methods: true,
+          passes: 2, // Giảm từ 3 xuống 2 để tránh lỗi
+          unsafe: false, // Tắt unsafe để tránh lỗi React
+          unsafe_comps: false,
+          unsafe_math: false,
+          unsafe_methods: false,
         },
         format: {
           comments: false, // Xóa tất cả comments
@@ -47,9 +51,18 @@ export default defineConfig(({ mode }) => {
       sourcemap: false, // Tắt source maps trong production để ẩn code
       rollupOptions: {
         output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom'],
-            'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/functions'],
+          manualChunks: (id) => {
+            // Tách vendor chunks nhưng đảm bảo React không bị duplicate
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'react-vendor';
+              }
+              if (id.includes('firebase')) {
+                return 'firebase-vendor';
+              }
+              // Các dependencies khác
+              return 'vendor';
+            }
           },
           // Compact output
           compact: true,
