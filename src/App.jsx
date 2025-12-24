@@ -122,7 +122,7 @@ const MOBILE_ALLOWED_START = new Date('2025-12-25T09:00:00+07:00').getTime();
 const MOBILE_ALLOWED_END = new Date('2025-12-25T09:15:00+07:00').getTime();
 
 // Khung giờ cho phép desktop: 11:00 - 15:00 ngày 25/12/2025 (giờ Việt Nam UTC+7)
-const DESKTOP_ALLOWED_START = new Date('2025-12-25T11:00:00+07:00').getTime();
+const DESKTOP_ALLOWED_START = new Date('2025-12-24T11:00:00+07:00').getTime();
 const DESKTOP_ALLOWED_END = new Date('2025-12-25T15:00:00+07:00').getTime();
 
 /**
