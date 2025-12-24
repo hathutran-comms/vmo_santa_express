@@ -25,6 +25,7 @@ import EnterID from './components/EnterID';
 import LoadingScreen from './components/LoadingScreen';
 import LeaderboardOverlay from './components/LeaderboardOverlay';
 import MobileBlock from './components/MobileBlock';
+import TimeBlock from './components/TimeBlock';
 import { savePlayerScore, getTop10Leaderboard, getPlayerHighScore, submitPipePassed, submitGiftCollected, submitGameStart } from './services/firebaseService';
 import './App.css';
 /**
@@ -109,11 +110,41 @@ const BASE_GIFT_SIZE = 60;
                                                                      |_|
 
 **/
-// Detect mobile device - CHẶN HOÀN TOÀN MOBILE
-const isMobile = 
-  /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-  (window.innerWidth <= 768 && 'ontouchstart' in window) ||
-  (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+// Detect mobile device
+const detectMobileDevice = () => {
+  return /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.innerWidth <= 768 && 'ontouchstart' in window) ||
+    (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+};
+
+// Khung giờ cho phép mobile: 09:00 - 09:15 ngày 25/12/2025 (giờ Việt Nam UTC+7)
+const MOBILE_ALLOWED_START = new Date('2025-12-25T09:00:00+07:00').getTime();
+const MOBILE_ALLOWED_END = new Date('2025-12-25T09:15:00+07:00').getTime();
+
+// Khung giờ cho phép desktop: 11:00 - 15:00 ngày 25/12/2025 (giờ Việt Nam UTC+7)
+const DESKTOP_ALLOWED_START = new Date('2025-12-25T11:00:00+07:00').getTime();
+const DESKTOP_ALLOWED_END = new Date('2025-12-25T15:00:00+07:00').getTime();
+
+/**
+ * Kiểm tra xem có đang trong khung giờ cho phép mobile không
+ * @returns {boolean} true nếu đang trong khung giờ cho phép mobile
+ */
+const isMobileAllowedTime = () => {
+  const now = Date.now();
+  return now >= MOBILE_ALLOWED_START && now <= MOBILE_ALLOWED_END;
+};
+
+/**
+ * Kiểm tra xem có đang trong khung giờ cho phép desktop không
+ * @returns {boolean} true nếu đang trong khung giờ cho phép desktop
+ */
+const isDesktopAllowedTime = () => {
+  const now = Date.now();
+  return now >= DESKTOP_ALLOWED_START && now <= DESKTOP_ALLOWED_END;
+};
+
+// Detect mobile device - CHẶN HOÀN TOÀN MOBILE (trừ khung giờ đặc biệt)
+// Note: isMobile sẽ được tính trong component dựa trên state
 
 const GAME_EXPIRATION_TIME = new Date('2025-12-25T15:00:00+07:00').getTime();
 
@@ -139,6 +170,18 @@ function App() {
   const [vmoId, setVmoId] = useState('');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  // Track mobile allowed time state (real-time)
+  const [isMobileAllowed, setIsMobileAllowed] = useState(isMobileAllowedTime());
+  const [isMobileDevice, setIsMobileDevice] = useState(detectMobileDevice());
+  // Track desktop allowed time state (real-time)
+  const [isDesktopAllowed, setIsDesktopAllowed] = useState(isDesktopAllowedTime());
+  
+  // Calculate isMobile based on state (reactive)
+  const isMobile = isMobileDevice && !isMobileAllowed;
+  
+  // Check if device is allowed to play (mobile trong khung giờ đặc biệt hoặc desktop trong khung giờ)
+  const isDeviceAllowed = (isMobileDevice && isMobileAllowed) || (!isMobileDevice && isDesktopAllowed);
+  
   // Reference dimensions for scaling (base game size)
   const REFERENCE_WIDTH = 500;
   const REFERENCE_HEIGHT = 750;
@@ -160,7 +203,7 @@ function App() {
   const [gameOver, setGameOver] = useState(false);
   const [isDead, setIsDead] = useState(false);
   const [pipeGap, setPipeGap] = useState(BASE_PIPE_GAP);
-  const [enableSmoke, setEnableSmoke] = useState(!isMobile); // Disable smoke on mobile for performance
+  const [enableSmoke, setEnableSmoke] = useState(!isMobileDevice); // Disable smoke on mobile for performance
   const [leaderboard, setLeaderboard] = useState([]);
   const [isMusicOn, setIsMusicOn] = useState(true);
   const [gameExpired, setGameExpired] = useState(isGameExpired());
@@ -191,6 +234,28 @@ function App() {
     
     return () => clearInterval(expirationCheckInterval);
   }, [gameExpired]);
+
+  // Check mobile and desktop allowed time every second (real-time)
+  useEffect(() => {
+    const timeCheckInterval = setInterval(() => {
+      const mobileAllowed = isMobileAllowedTime();
+      const desktopAllowed = isDesktopAllowedTime();
+      
+      setIsMobileAllowed(mobileAllowed);
+      setIsDesktopAllowed(desktopAllowed);
+      
+      // Nếu hết khung giờ cho phép, reload để chặn lại
+      if (isMobileDevice && !mobileAllowed && isMobileAllowed) {
+        // Mobile hết khung giờ đặc biệt
+        window.location.reload();
+      } else if (!isMobileDevice && !desktopAllowed && isDesktopAllowed) {
+        // Desktop hết khung giờ
+        window.location.reload();
+      }
+    }, 1000); // Check every second
+    
+    return () => clearInterval(timeCheckInterval);
+  }, [isMobileDevice, isMobileAllowed, isDesktopAllowed]);
   /**
  
 
@@ -1654,9 +1719,17 @@ function App() {
 
   // Keep background music playing continuously (no pause on game over)
 
-  // Chặn mobile - hiển thị message và không cho chơi
-  if (isMobile) {
-    return <MobileBlock />;
+  // Chặn nếu ngoài khung giờ cho phép
+  // Mobile: chỉ chơi được trong khung giờ đặc biệt (09:00-09:15)
+  // Desktop: chỉ chơi được trong khung giờ (11:00-15:00)
+  if (!isDeviceAllowed) {
+    if (isMobileDevice && !isMobileAllowed) {
+      // Mobile ngoài khung giờ đặc biệt
+      return <MobileBlock />;
+    } else if (!isMobileDevice && !isDesktopAllowed) {
+      // Desktop ngoài khung giờ
+      return <TimeBlock isMobileDevice={false} />;
+    }
   }
 
   return (

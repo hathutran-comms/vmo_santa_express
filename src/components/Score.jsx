@@ -68,7 +68,17 @@ const Score = ({ score, highScore, gameStarted, gameOver, onRetry, onShowLeaderb
             alt="Santa Express"
             className="start-title"
           />
-          <p>{gameExpired ? 'Game Finished - Check Your Score' : 'Tap or Press Space to Start'}</p>
+          <p>
+            {gameExpired
+              ? 'Game Finished - Check Your Score'
+              : <>
+                  Tap or Press Space to Start
+                  <br />
+                  <br />
+                  Please Don't Cheat!!! Have Fun!
+                </>
+            }
+          </p>
         </div>
       )}
       
