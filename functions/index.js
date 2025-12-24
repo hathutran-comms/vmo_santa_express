@@ -14,6 +14,7 @@ admin.initializeApp();
 
 const db = admin.firestore();
 const LEADERBOARD_COLLECTION = 'leaderboard2';
+const CHEAT_LEADERBOARD_COLLECTION = 'leaderboard_cheat';
 
 /**
  * Validate VMO ID
@@ -90,6 +91,69 @@ function calculateScore(pipesPassed, giftsReceived) {
 }
 
 /**
+ * Lưu điểm số bị reject vào leaderboard_cheat
+ * Lưu đầy đủ thông tin giống như lưu bình thường
+ */
+async function saveToCheatLeaderboard(vmoId, sessionId, uid, calculatedScore, pipesCount, giftsCount, playTimeSeconds, gameStartTime, gameEndTime, gameDuration, reportedDuration, rejectionReason, additionalData = {}) {
+  try {
+    const cheatDocRef = db.collection(CHEAT_LEADERBOARD_COLLECTION).doc(vmoId);
+    const timestamp = Date.now();
+    
+    const cheatData = {
+      vmoId: vmoId,
+      score: calculatedScore,
+      pipesPassed: pipesCount,
+      giftsReceived: giftsCount,
+      playTimeSeconds: playTimeSeconds || 0,
+      sessionId: sessionId,
+      uid: uid,
+      rejectionReason: rejectionReason, // Lý do bị reject
+      gameStartTime: gameStartTime,
+      gameEndTime: gameEndTime,
+      gameDuration: gameDuration,
+      reportedDuration: reportedDuration,
+      lastActionType: 'game_over',
+      lastActionTimestamp: gameEndTime,
+      updatedAt: timestamp,
+      createdAt: timestamp,
+      ...additionalData // Thêm các thông tin bổ sung nếu có
+    };
+    
+    // Lưu vào cheat leaderboard (merge để có thể có nhiều records cho cùng vmoId)
+    // Sử dụng sessionId làm document ID để mỗi session có một record riêng
+    const cheatSessionDocRef = cheatDocRef.collection('sessions').doc(sessionId);
+    await cheatSessionDocRef.set(cheatData);
+    
+    // Cũng lưu vào document chính với timestamp để dễ query
+    await cheatDocRef.set({
+      lastCheatAt: timestamp,
+      lastRejectionReason: rejectionReason,
+      lastSessionId: sessionId,
+      lastScore: calculatedScore,
+      lastPipesPassed: pipesCount,
+      lastGiftsReceived: giftsCount
+    }, { merge: true });
+    
+    console.log('[FUNCTION] 💾 Saved to cheat leaderboard:', {
+      vmoId,
+      sessionId,
+      score: calculatedScore,
+      rejectionReason,
+      timestamp: new Date(timestamp).toISOString()
+    });
+  } catch (error) {
+    // Log error nhưng không throw để không ảnh hưởng đến flow chính
+    console.error('[FUNCTION] ❌ Error saving to cheat leaderboard:', {
+      error: error.message,
+      vmoId,
+      sessionId,
+      rejectionReason,
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+
+/**
  * Rate limiting đã được xóa để hỗ trợ real-time tracking
  * Với real-time tracking, mỗi action được gửi riêng biệt:
  * - game_start: 1
@@ -121,7 +185,12 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
 
   // 1. Kiểm tra authentication
   if (!context.auth) {
-    console.error('[FUNCTION] ❌ Authentication failed - no auth context');
+    console.error('[FUNCTION] ❌ Authentication failed - no auth context', {
+      timestamp: new Date().toISOString(),
+      hasData: !!data,
+      dataKeys: data ? Object.keys(data) : [],
+      rawData: JSON.stringify(data)
+    });
     throw new functions.https.HttpsError(
       'unauthenticated',
       'User must be authenticated'
@@ -129,7 +198,10 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
   }
 
   const uid = context.auth.uid;
-  console.log('[FUNCTION] ✅ Authenticated user:', uid);
+  console.log('[FUNCTION] ✅ Authenticated user:', {
+    uid,
+    timestamp: new Date().toISOString()
+  });
 
   // 2. Validate và extract data
   const { action, vmoId, sessionId } = data;
@@ -142,7 +214,16 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
   
   // Validate sessionId
   if (!sessionId || typeof sessionId !== 'string' || sessionId.length > 100) {
-    console.error('[FUNCTION] ❌ Invalid sessionId:', sessionId);
+    console.error('[FUNCTION] ❌ Invalid sessionId:', {
+      sessionId,
+      sessionIdType: typeof sessionId,
+      sessionIdLength: sessionId?.length,
+      vmoId: data?.vmoId,
+      actionType: data?.action?.type,
+      uid,
+      timestamp: new Date().toISOString(),
+      fullData: JSON.stringify(data)
+    });
     throw new functions.https.HttpsError(
       'invalid-argument',
       'Invalid sessionId'
@@ -150,7 +231,15 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
   }
 
   if (!action) {
-    console.error('[FUNCTION] ❌ Missing action parameter');
+    console.error('[FUNCTION] ❌ Missing action parameter', {
+      vmoId: data?.vmoId,
+      sessionId,
+      uid,
+      hasAction: !!data?.action,
+      dataKeys: data ? Object.keys(data) : [],
+      timestamp: new Date().toISOString(),
+      fullData: JSON.stringify(data)
+    });
     throw new functions.https.HttpsError(
       'invalid-argument',
       'Missing action parameter'
@@ -158,27 +247,77 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
   }
 
   // Validate VMO ID
-  console.log('[FUNCTION] Validating VMO ID:', vmoId);
+  console.log('[FUNCTION] Validating VMO ID:', {
+    vmoId,
+    vmoIdType: typeof vmoId,
+    vmoIdLength: vmoId?.length,
+    sessionId,
+    actionType: action?.type,
+    uid
+  });
   const sanitizedVmoId = validateVmoId(vmoId);
   if (!sanitizedVmoId) {
-    console.error('[FUNCTION] ❌ Invalid VMO ID:', vmoId);
+    console.error('[FUNCTION] ❌ Invalid VMO ID:', {
+      vmoId,
+      vmoIdType: typeof vmoId,
+      vmoIdLength: vmoId?.length,
+      sessionId,
+      actionType: action?.type,
+      actionTimestamp: action?.timestamp,
+      uid,
+      timestamp: new Date().toISOString(),
+      fullAction: JSON.stringify(action),
+      fullData: JSON.stringify(data)
+    });
     throw new functions.https.HttpsError(
       'invalid-argument',
       'Invalid VMO ID'
     );
   }
-  console.log('[FUNCTION] ✅ VMO ID validated:', sanitizedVmoId);
+  console.log('[FUNCTION] ✅ VMO ID validated:', {
+    originalVmoId: vmoId,
+    sanitizedVmoId,
+    sessionId,
+    actionType: action?.type
+  });
 
   // Validate action
-  console.log('[FUNCTION] Validating action...');
+  console.log('[FUNCTION] Validating action:', {
+    actionType: action?.type,
+    actionTimestamp: action?.timestamp,
+    playTimeSeconds: action?.playTimeSeconds,
+    actionKeys: action ? Object.keys(action) : [],
+    vmoId: sanitizedVmoId,
+    sessionId,
+    uid
+  });
   if (!validateAction(action)) {
-    console.error('[FUNCTION] ❌ Invalid action format:', JSON.stringify(action));
+    console.error('[FUNCTION] ❌ Invalid action format:', {
+      action: JSON.stringify(action),
+      actionType: action?.type,
+      actionTypeValid: action?.type && ['game_start', 'pipe_passed', 'gift_collected', 'game_over'].includes(action.type),
+      actionTimestamp: action?.timestamp,
+      actionTimestampType: typeof action?.timestamp,
+      actionTimestampValid: typeof action?.timestamp === 'number' && action.timestamp > 0,
+      playTimeSeconds: action?.playTimeSeconds,
+      playTimeSecondsType: typeof action?.playTimeSeconds,
+      vmoId: sanitizedVmoId,
+      sessionId,
+      uid,
+      timestamp: new Date().toISOString(),
+      fullData: JSON.stringify(data)
+    });
     throw new functions.https.HttpsError(
       'invalid-argument',
       'Invalid action format'
     );
   }
-  console.log('[FUNCTION] ✅ Action validated');
+  console.log('[FUNCTION] ✅ Action validated:', {
+    actionType: action.type,
+    actionTimestamp: action.timestamp,
+    vmoId: sanitizedVmoId,
+    sessionId
+  });
 
   // Rate limiting đã được xóa để hỗ trợ real-time tracking
   // Người chơi giỏi có thể gửi nhiều actions trong một game
@@ -202,7 +341,15 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
         const existingData = existingSession.data();
         // Nếu session đã có game_over, cho phép tạo session mới
         if (!existingData.gameOverAt) {
-          console.error('[FUNCTION] ❌ Session already exists and not ended');
+          console.error('[FUNCTION] ❌ Session already exists and not ended', {
+            vmoId: sanitizedVmoId,
+            sessionId,
+            uid,
+            existingSessionData: existingData,
+            actionTimestamp: action.timestamp,
+            serverTime: Date.now(),
+            timestamp: new Date().toISOString()
+          });
           throw new functions.https.HttpsError(
             'invalid-argument',
             'Session already exists. Please end the current game before starting a new one.'
@@ -214,7 +361,18 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       const serverTimeNow = Date.now();
       const MAX_FUTURE_TIMESTAMP_DIFF = 5000; // 5 giây
       if (action.timestamp > serverTimeNow + MAX_FUTURE_TIMESTAMP_DIFF) {
-        console.error('[FUNCTION] ❌ Timestamp in the future');
+        console.error('[FUNCTION] ❌ Timestamp in the future', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          clientTimestamp: action.timestamp,
+          serverTimestamp: serverTimeNow,
+          diff: action.timestamp - serverTimeNow,
+          maxAllowedDiff: MAX_FUTURE_TIMESTAMP_DIFF,
+          clientTime: new Date(action.timestamp).toISOString(),
+          serverTime: new Date(serverTimeNow).toISOString(),
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Action timestamp cannot be in the future'
@@ -246,7 +404,14 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       // Validate session ownership cho các actions khác
       const sessionDoc = await sessionDocRef.get();
       if (!sessionDoc.exists) {
-        console.error('[FUNCTION] ❌ Session does not exist');
+        console.error('[FUNCTION] ❌ Session does not exist', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          actionType: action.type,
+          actionTimestamp: action.timestamp,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Session does not exist. Please start a game first.'
@@ -255,13 +420,27 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       
       const sessionData = sessionDoc.data();
       console.log('[FUNCTION] Session data:', {
+        vmoId: sanitizedVmoId,
+        sessionId,
         sessionUid: sessionData.uid,
         currentUid: uid,
-        match: sessionData.uid === uid
+        match: sessionData.uid === uid,
+        sessionStartedAt: sessionData.startedAt,
+        gameOverAt: sessionData.gameOverAt,
+        actionType: action.type
       });
       
       if (sessionData.uid !== uid) {
-        console.error('[FUNCTION] ❌ Session ownership mismatch');
+        console.error('[FUNCTION] ❌ Session ownership mismatch', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          sessionUid: sessionData.uid,
+          currentUid: uid,
+          actionType: action.type,
+          actionTimestamp: action.timestamp,
+          sessionStartedAt: sessionData.startedAt,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'permission-denied',
           'Session does not belong to you'
@@ -270,7 +449,17 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       
       // Validate session không thể reuse sau game_over
       if (sessionData.gameOverAt) {
-        console.error('[FUNCTION] ❌ Session already ended (game_over already called)');
+        console.error('[FUNCTION] ❌ Session already ended (game_over already called)', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          actionType: action.type,
+          actionTimestamp: action.timestamp,
+          sessionGameOverAt: sessionData.gameOverAt,
+          sessionStartedAt: sessionData.startedAt,
+          finalScore: sessionData.finalScore,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Session has already ended. Please start a new game.'
@@ -300,7 +489,16 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
         .get();
       
       if (gameStartQuery.empty && action.type !== 'game_start') {
-        console.error('[FUNCTION] ❌ No game_start found before this action');
+        console.error('[FUNCTION] ❌ No game_start found before this action', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          actionType: action.type,
+          actionTimestamp: action.timestamp,
+          gameStartQueryEmpty: gameStartQuery.empty,
+          sessionStartedAt: sessionData.startedAt,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Game must be started before submitting other actions'
@@ -314,7 +512,17 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
         .get();
       
       if (!gameOverQuery.empty && action.type !== 'game_over') {
-        console.error('[FUNCTION] ❌ Game already over, cannot submit more actions');
+        console.error('[FUNCTION] ❌ Game already over, cannot submit more actions', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          actionType: action.type,
+          actionTimestamp: action.timestamp,
+          gameOverExists: !gameOverQuery.empty,
+          existingGameOver: gameOverQuery.docs[0]?.data(),
+          sessionGameOverAt: sessionData.gameOverAt,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Game has already ended. Cannot submit more actions.'
@@ -333,10 +541,21 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
           .get();
         
         if (!duplicateCheckQuery.empty) {
+          const existingAction = duplicateCheckQuery.docs[0].data();
           console.error('[FUNCTION] ❌ Duplicate action detected:', {
+            vmoId: sanitizedVmoId,
+            sessionId,
+            uid,
             actionType: action.type,
-            timestamp: action.timestamp,
-            existingAction: duplicateCheckQuery.docs[0].data()
+            actionTimestamp: action.timestamp,
+            existingActionType: existingAction.type,
+            existingActionTimestamp: existingAction.timestamp,
+            existingActionServerReceivedAt: existingAction.serverReceivedAt,
+            duplicateTimeWindow: DUPLICATE_TIME_WINDOW,
+            timeDiff: Math.abs(action.timestamp - existingAction.timestamp),
+            sessionStartedAt: sessionData.startedAt,
+            serverTime: Date.now(),
+            timestamp: new Date().toISOString()
           });
           throw new functions.https.HttpsError(
             'invalid-argument',
@@ -348,17 +567,35 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
         // Vì đây là validation phụ, không phải bắt buộc
         // Index sẽ được build và query sẽ hoạt động sau
         if (queryError.message && queryError.message.includes('index')) {
-          console.warn('[FUNCTION] ⚠️ Duplicate check query failed (index may be building):', queryError.message);
+          console.warn('[FUNCTION] ⚠️ Duplicate check query failed (index may be building):', {
+            error: queryError.message,
+            vmoId: sanitizedVmoId,
+            sessionId,
+            uid,
+            actionType: action.type,
+            actionTimestamp: action.timestamp,
+            timestamp: new Date().toISOString()
+          });
           // Tiếp tục xử lý action (không block để tránh false positive khi index đang build)
         } else {
           // Nếu là lỗi khác (như duplicate thật), throw lại
+          console.error('[FUNCTION] ❌ Duplicate check query error:', {
+            error: queryError.message,
+            errorStack: queryError.stack,
+            vmoId: sanitizedVmoId,
+            sessionId,
+            uid,
+            actionType: action.type,
+            actionTimestamp: action.timestamp,
+            timestamp: new Date().toISOString()
+          });
           throw queryError;
         }
       }
       
       // Validate số lượng actions trong session (chống fake nhiều actions)
       // QUAN TRỌNG: game_over LUÔN được phép qua để tránh mất điểm của người chơi giỏi
-      const MAX_ACTIONS_PER_SESSION = 2000; // Tăng limit cho người chơi giỏi (500 pipes + 150 gifts + overhead)
+      const MAX_ACTIONS_PER_SESSION = 5000; // Tăng limit cho người chơi giỏi (500 pipes + 150 gifts + overhead)
       
       // Chỉ validate limit cho các actions thông thường, KHÔNG chặn game_over
       if (action.type !== 'game_over') {
@@ -372,7 +609,19 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
         });
         
         if (actionsCount >= MAX_ACTIONS_PER_SESSION) {
-          console.error('[FUNCTION] ❌ Too many actions in session');
+          console.error('[FUNCTION] ❌ Too many actions in session', {
+            vmoId: sanitizedVmoId,
+            sessionId,
+            uid,
+            actionType: action.type,
+            actionsCount,
+            maxAllowed: MAX_ACTIONS_PER_SESSION,
+            excess: actionsCount - MAX_ACTIONS_PER_SESSION,
+            sessionStartedAt: sessionData.startedAt,
+            currentTime: Date.now(),
+            sessionDuration: Date.now() - (sessionData.startedAt || Date.now()),
+            timestamp: new Date().toISOString()
+          });
           throw new functions.https.HttpsError(
             'resource-exhausted',
             'Too many actions in this session. Maximum allowed: ' + MAX_ACTIONS_PER_SESSION
@@ -423,7 +672,23 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
             });
             
             if (timeDiff < MIN_TIME_BETWEEN_ACTIONS) {
-              console.error('[FUNCTION] ❌ Actions too fast (server-validated)');
+              console.error('[FUNCTION] ❌ Actions too fast (server-validated)', {
+                vmoId: sanitizedVmoId,
+                sessionId,
+                uid,
+                actionType: action.type,
+                actionTimestamp: action.timestamp,
+                lastActionTimestamp: lastAction.timestamp,
+                lastActionServerReceivedAt: lastAction.serverReceivedAt,
+                lastActionType: lastAction.type,
+                serverTimeNow,
+                lastServerTime,
+                timeDiff,
+                minRequired: MIN_TIME_BETWEEN_ACTIONS,
+                violation: `Time diff ${timeDiff}ms < minimum ${MIN_TIME_BETWEEN_ACTIONS}ms`,
+                sessionStartedAt: sessionData.startedAt,
+                timestamp: new Date().toISOString()
+              });
               throw new functions.https.HttpsError(
                 'invalid-argument',
                 'Actions are too fast. Minimum time between actions: ' + MIN_TIME_BETWEEN_ACTIONS + 'ms'
@@ -433,7 +698,16 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
         } catch (queryError) {
           // Nếu query fail (có thể do thiếu index), log warning nhưng không block
           // Vì đây là validation phụ, không phải bắt buộc
-          console.warn('[FUNCTION] ⚠️ Timing validation query failed (non-blocking):', queryError.message);
+          console.warn('[FUNCTION] ⚠️ Timing validation query failed (non-blocking):', {
+            error: queryError.message,
+            errorStack: queryError.stack,
+            vmoId: sanitizedVmoId,
+            sessionId,
+            uid,
+            actionType: action.type,
+            actionTimestamp: action.timestamp,
+            timestamp: new Date().toISOString()
+          });
           // Tiếp tục xử lý action (không block để tránh false positive)
         }
       }
@@ -478,10 +752,51 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
         if (reportedDuration > 5000 && gameDuration > 5000) {
           const differencePercent = Math.abs(gameDuration - reportedDuration) / reportedDuration;
           if (differencePercent > 0.5) {
-            console.error('[FUNCTION] ❌ Invalid game duration - difference too large:', {
+            // Tính điểm trước khi reject
+            const [pipesCountSnapshot, giftsCountSnapshot] = await Promise.all([
+              sessionActionsRef.where('type', '==', 'pipe_passed').count().get(),
+              sessionActionsRef.where('type', '==', 'gift_collected').count().get()
+            ]);
+            const pipesCount = pipesCountSnapshot.data().count;
+            const giftsCount = giftsCountSnapshot.data().count;
+            const calculatedScore = calculateScore(pipesCount, giftsCount);
+            
+            // Lưu vào cheat leaderboard
+            await saveToCheatLeaderboard(
+              sanitizedVmoId,
+              sessionId,
+              uid,
+              calculatedScore,
+              pipesCount,
+              giftsCount,
+              action.playTimeSeconds,
+              gameStartTime,
+              action.timestamp,
               gameDuration,
               reportedDuration,
-              differencePercent: (differencePercent * 100).toFixed(2) + '%'
+              'Invalid game duration - difference too large',
+              {
+                difference: Math.abs(gameDuration - reportedDuration),
+                differencePercent: (differencePercent * 100).toFixed(2) + '%',
+                violation: `Difference ${(differencePercent * 100).toFixed(2)}% > 50% allowed`
+              }
+            );
+            
+            console.error('[FUNCTION] ❌ Invalid game duration - difference too large:', {
+              vmoId: sanitizedVmoId,
+              sessionId,
+              uid,
+              gameStartTime,
+              gameEndTime: action.timestamp,
+              gameDuration,
+              reportedDuration,
+              difference: Math.abs(gameDuration - reportedDuration),
+              differencePercent: (differencePercent * 100).toFixed(2) + '%',
+              violation: `Difference ${(differencePercent * 100).toFixed(2)}% > 50% allowed`,
+              actionTimestamp: action.timestamp,
+              playTimeSeconds: action.playTimeSeconds,
+              serverTime: Date.now(),
+              timestamp: new Date().toISOString()
             });
             throw new functions.https.HttpsError(
               'invalid-argument',
@@ -522,7 +837,45 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       });
       
       if (actionsPerSecond > MAX_ACTIONS_PER_SECOND) {
-        console.error('[FUNCTION] ❌ Too many actions per second');
+        // Lưu vào cheat leaderboard
+        await saveToCheatLeaderboard(
+          sanitizedVmoId,
+          sessionId,
+          uid,
+          calculatedScore,
+          pipesCount,
+          giftsCount,
+          action.playTimeSeconds,
+          gameStartTime,
+          action.timestamp,
+          gameDuration,
+          reportedDuration,
+          'Too many actions per second',
+          {
+            totalActions,
+            actionsPerSecond: actionsPerSecond.toFixed(2),
+            maxAllowed: MAX_ACTIONS_PER_SECOND,
+            violation: `${actionsPerSecond.toFixed(2)} actions/sec > ${MAX_ACTIONS_PER_SECOND} actions/sec`
+          }
+        );
+        
+        console.error('[FUNCTION] ❌ Too many actions per second', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          totalActions,
+          gameDuration,
+          gameDurationSeconds: (gameDuration / 1000).toFixed(2),
+          actionsPerSecond: actionsPerSecond.toFixed(2),
+          maxAllowed: MAX_ACTIONS_PER_SECOND,
+          violation: `${actionsPerSecond.toFixed(2)} actions/sec > ${MAX_ACTIONS_PER_SECOND} actions/sec`,
+          pipesCount,
+          giftsCount,
+          gameStartTime,
+          gameEndTime: action.timestamp,
+          reportedDuration,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Too many actions per second. Maximum allowed: ' + MAX_ACTIONS_PER_SECOND + ' actions/sec'
@@ -540,7 +893,7 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       // - Pipes: Tối đa 0.8 pipes/giây (rất giỏi, pipes spawn mỗi 1-2 giây)
       // - Gifts: Tối đa 0.3 gifts/giây (rất giỏi, gifts spawn mỗi 3-5 giây)
       const MAX_PIPES_PER_SECOND = 0.8; // Giảm từ 2.5 xuống 0.8 (thực tế hơn)
-      const MAX_GIFTS_PER_SECOND = 0.3; // Giảm từ 1.0 xuống 0.3 (thực tế hơn)
+      const MAX_GIFTS_PER_SECOND = 0.5; // Giảm từ 1.0 xuống 0.3 (thực tế hơn)
       
       const pipesPerSecond = pipesCount / Math.max(gameDurationSeconds, 1);
       const giftsPerSecond = giftsCount / Math.max(gameDurationSeconds, 1);
@@ -556,7 +909,45 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       });
       
       if (pipesPerSecond > MAX_PIPES_PER_SECOND) {
-        console.error('[FUNCTION] ❌ Too many pipes per second');
+        // Lưu vào cheat leaderboard
+        await saveToCheatLeaderboard(
+          sanitizedVmoId,
+          sessionId,
+          uid,
+          calculatedScore,
+          pipesCount,
+          giftsCount,
+          action.playTimeSeconds,
+          gameStartTime,
+          action.timestamp,
+          gameDuration,
+          reportedDuration,
+          'Too many pipes per second',
+          {
+            pipesPerSecond: pipesPerSecond.toFixed(2),
+            maxAllowed: MAX_PIPES_PER_SECOND,
+            violation: `${pipesPerSecond.toFixed(2)} pipes/sec > ${MAX_PIPES_PER_SECOND} pipes/sec`,
+            totalActions
+          }
+        );
+        
+        console.error('[FUNCTION] ❌ Too many pipes per second', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          pipesCount,
+          gameDuration,
+          gameDurationSeconds: (gameDuration / 1000).toFixed(2),
+          pipesPerSecond: pipesPerSecond.toFixed(2),
+          maxAllowed: MAX_PIPES_PER_SECOND,
+          violation: `${pipesPerSecond.toFixed(2)} pipes/sec > ${MAX_PIPES_PER_SECOND} pipes/sec`,
+          giftsCount,
+          totalActions,
+          gameStartTime,
+          gameEndTime: action.timestamp,
+          reportedDuration,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Too many pipes passed per second. Maximum allowed: ' + MAX_PIPES_PER_SECOND + ' pipes/sec'
@@ -564,7 +955,45 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       }
       
       if (giftsPerSecond > MAX_GIFTS_PER_SECOND) {
-        console.error('[FUNCTION] ❌ Too many gifts per second');
+        // Lưu vào cheat leaderboard
+        await saveToCheatLeaderboard(
+          sanitizedVmoId,
+          sessionId,
+          uid,
+          calculatedScore,
+          pipesCount,
+          giftsCount,
+          action.playTimeSeconds,
+          gameStartTime,
+          action.timestamp,
+          gameDuration,
+          reportedDuration,
+          'Too many gifts per second',
+          {
+            giftsPerSecond: giftsPerSecond.toFixed(2),
+            maxAllowed: MAX_GIFTS_PER_SECOND,
+            violation: `${giftsPerSecond.toFixed(2)} gifts/sec > ${MAX_GIFTS_PER_SECOND} gifts/sec`,
+            totalActions
+          }
+        );
+        
+        console.error('[FUNCTION] ❌ Too many gifts per second', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          giftsCount,
+          gameDuration,
+          gameDurationSeconds: (gameDuration / 1000).toFixed(2),
+          giftsPerSecond: giftsPerSecond.toFixed(2),
+          maxAllowed: MAX_GIFTS_PER_SECOND,
+          violation: `${giftsPerSecond.toFixed(2)} gifts/sec > ${MAX_GIFTS_PER_SECOND} gifts/sec`,
+          pipesCount,
+          totalActions,
+          gameStartTime,
+          gameEndTime: action.timestamp,
+          reportedDuration,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Too many gifts collected per second. Maximum allowed: ' + MAX_GIFTS_PER_SECOND + ' gifts/sec'
@@ -593,12 +1022,48 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
         });
         
         if (averageTimeBetweenPipes < MIN_TIME_BETWEEN_PIPES) {
-          console.error('[FUNCTION] ❌ Pipes passed too fast - HACK DETECTED!', {
+          // Lưu vào cheat leaderboard
+          await saveToCheatLeaderboard(
+            sanitizedVmoId,
+            sessionId,
+            uid,
+            calculatedScore,
             pipesCount,
+            giftsCount,
+            action.playTimeSeconds,
+            gameStartTime,
+            action.timestamp,
+            gameDuration,
+            reportedDuration,
+            'Pipes passed too fast - HACK DETECTED',
+            {
+              averageTimeBetweenPipes: averageTimeBetweenPipes.toFixed(2),
+              minRequired: MIN_TIME_BETWEEN_PIPES,
+              violation: `Average ${averageTimeBetweenPipes.toFixed(2)}s/pipe < minimum ${MIN_TIME_BETWEEN_PIPES}s/pipe`,
+              pipesPerSecond: (pipesCount / gameDurationSeconds).toFixed(2),
+              totalActions
+            }
+          );
+          
+          console.error('[FUNCTION] ❌ Pipes passed too fast - HACK DETECTED!', {
+            vmoId: sanitizedVmoId,
+            sessionId,
+            uid,
+            pipesCount,
+            giftsCount,
+            totalActions,
+            gameDuration,
             gameDurationSeconds: gameDurationSeconds.toFixed(2),
+            gameStartTime,
+            gameEndTime: action.timestamp,
+            reportedDuration,
             averageTimeBetweenPipes: averageTimeBetweenPipes.toFixed(2),
             minRequired: MIN_TIME_BETWEEN_PIPES,
-            violation: `Average ${averageTimeBetweenPipes.toFixed(2)}s/pipe < minimum ${MIN_TIME_BETWEEN_PIPES}s/pipe`
+            violation: `Average ${averageTimeBetweenPipes.toFixed(2)}s/pipe < minimum ${MIN_TIME_BETWEEN_PIPES}s/pipe`,
+            pipesPerSecond: (pipesCount / gameDurationSeconds).toFixed(2),
+            calculatedScore,
+            previousScore,
+            timestamp: new Date().toISOString()
           });
           throw new functions.https.HttpsError(
             'invalid-argument',
@@ -619,11 +1084,48 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
           });
           
           if (pipesCount > maxPossiblePipes) {
-            console.error('[FUNCTION] ❌ Too many pipes for game duration - HACK DETECTED!', {
+            // Lưu vào cheat leaderboard
+            await saveToCheatLeaderboard(
+              sanitizedVmoId,
+              sessionId,
+              uid,
+              calculatedScore,
               pipesCount,
+              giftsCount,
+              action.playTimeSeconds,
+              gameStartTime,
+              action.timestamp,
+              gameDuration,
+              reportedDuration,
+              'Too many pipes for game duration - HACK DETECTED',
+              {
+                maxPossiblePipes,
+                excess: pipesCount - maxPossiblePipes,
+                minTimeBetweenPipes: MIN_TIME_BETWEEN_PIPES,
+                averageTimeBetweenPipes: (gameDurationSeconds / pipesCount).toFixed(2),
+                totalActions
+              }
+            );
+            
+            console.error('[FUNCTION] ❌ Too many pipes for game duration - HACK DETECTED!', {
+              vmoId: sanitizedVmoId,
+              sessionId,
+              uid,
+              pipesCount,
+              giftsCount,
+              totalActions,
+              gameDuration,
               gameDurationSeconds: gameDurationSeconds.toFixed(2),
+              gameStartTime,
+              gameEndTime: action.timestamp,
+              reportedDuration,
               maxPossiblePipes,
-              excess: pipesCount - maxPossiblePipes
+              excess: pipesCount - maxPossiblePipes,
+              minTimeBetweenPipes: MIN_TIME_BETWEEN_PIPES,
+              averageTimeBetweenPipes: (gameDurationSeconds / pipesCount).toFixed(2),
+              calculatedScore,
+              previousScore,
+              timestamp: new Date().toISOString()
             });
             throw new functions.https.HttpsError(
               'invalid-argument',
@@ -637,7 +1139,41 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
       // Trong game thực tế, có nhiều pipes hơn gifts (gifts spawn ít hơn)
       // Nhưng không thể chỉ có pipes mà không có gifts (suspicious pattern)
       if (pipesCount > 20 && giftsCount === 0) {
-        console.error('[FUNCTION] ❌ Suspicious pattern: Many pipes but no gifts');
+        // Lưu vào cheat leaderboard
+        await saveToCheatLeaderboard(
+          sanitizedVmoId,
+          sessionId,
+          uid,
+          calculatedScore,
+          pipesCount,
+          giftsCount,
+          action.playTimeSeconds,
+          gameStartTime,
+          action.timestamp,
+          gameDuration,
+          reportedDuration,
+          'Suspicious pattern: Many pipes but no gifts',
+          {
+            totalActions
+          }
+        );
+        
+        console.error('[FUNCTION] ❌ Suspicious pattern: Many pipes but no gifts', {
+          vmoId: sanitizedVmoId,
+          sessionId,
+          uid,
+          pipesCount,
+          giftsCount,
+          totalActions,
+          gameDuration,
+          gameDurationSeconds: (gameDuration / 1000).toFixed(2),
+          gameStartTime,
+          gameEndTime: action.timestamp,
+          reportedDuration,
+          calculatedScore,
+          previousScore,
+          timestamp: new Date().toISOString()
+        });
         throw new functions.https.HttpsError(
           'invalid-argument',
           'Suspicious game pattern detected. Too many pipes without any gifts.'
@@ -713,16 +1249,28 @@ exports.submitAction = functions.https.onCall(async (data, context) => {
     }
 
   } catch (error) {
-    console.error('[FUNCTION] ❌ Error in submitAction:', {
+    // Log đầy đủ thông số khi có lỗi
+    const errorContext = {
+      timestamp: new Date().toISOString(),
       error: error.message,
-      stack: error.stack,
-      code: error.code,
-      actionType: action?.type,
-      vmoId: sanitizedVmoId,
-      sessionId: sessionId,
       errorName: error.name,
-      errorDetails: error.details
-    });
+      errorCode: error.code,
+      errorStack: error.stack,
+      errorDetails: error.details,
+      uid: context.auth?.uid,
+      vmoId: data?.vmoId,
+      sanitizedVmoId: sanitizedVmoId || data?.vmoId,
+      sessionId: data?.sessionId,
+      actionType: data?.action?.type,
+      actionTimestamp: data?.action?.timestamp,
+      playTimeSeconds: data?.action?.playTimeSeconds,
+      fullAction: data?.action ? JSON.stringify(data.action) : null,
+      fullData: JSON.stringify(data),
+      serverTime: Date.now(),
+      serverTimeISO: new Date().toISOString()
+    };
+    
+    console.error('[FUNCTION] ❌ Error in submitAction:', errorContext);
     
     // Nếu là HttpsError từ validation, throw lại nguyên bản
     if (error instanceof functions.https.HttpsError) {
