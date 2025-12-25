@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import './EnterID.css';
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 const EnterID = ({ onSubmit, onCancel }) => {
   const [vmoId, setVmoId] = useState(['', '', '', '']);
   const [showWarning, setShowWarning] = useState(false);
@@ -104,17 +94,7 @@ const EnterID = ({ onSubmit, onCancel }) => {
       handleInputChange(index, { target: { value: e.key } });
     }
   };
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   const handlePaste = (e) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, MAX_LENGTH);
@@ -208,17 +188,7 @@ const EnterID = ({ onSubmit, onCancel }) => {
   }, [handleKeyPress]);
 
   const fullId = vmoId.join('');
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   return (
     <div className="enter-id-wrapper">
     <div className="enter-id-overlay">
@@ -296,14 +266,3 @@ const EnterID = ({ onSubmit, onCancel }) => {
 };
 
 export default EnterID;
-/**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/

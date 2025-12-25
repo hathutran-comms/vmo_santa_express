@@ -7,17 +7,7 @@ const Gift = React.memo(({ giftX, giftY, spriteIndex, isBreaking }) => {
   // Row 0-1: Intact gifts (8 gifts)
   // Row 3: Breaking/Broken gifts (use for broken state)
   let row, col;
-  /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+  
   if (isBreaking) {
     // Use breaking sprites from row 3 only (last row)
     row = 3;
@@ -70,14 +60,3 @@ const Gift = React.memo(({ giftX, giftY, spriteIndex, isBreaking }) => {
 Gift.displayName = 'Gift';
 
 export default Gift;
-/**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/

@@ -1,16 +1,6 @@
 import React from 'react';
 import './Pipe.css';
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 const PipePair = React.memo(({ pipeX, topPipeHeight, gap, gameHeight }) => {
   const pipeHeight = topPipeHeight + 40;
   
@@ -53,14 +43,3 @@ const PipePair = React.memo(({ pipeX, topPipeHeight, gap, gameHeight }) => {
 PipePair.displayName = 'PipePair';
 
 export default PipePair;
-/**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/

@@ -1,17 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { sanitizeString } from '../utils/security';
 import './LeaderboardOverlay.css';
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 const LeaderboardOverlay = ({ entries = [], onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
@@ -75,17 +65,7 @@ const LeaderboardOverlay = ({ entries = [], onClose }) => {
       setCurrentPage(currentPage - 1);
     }
   };
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   return (
     <div className="leaderboard-overlay" onClick={onClose} role="presentation">
       <div className="leaderboard-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
@@ -178,14 +158,3 @@ const LeaderboardOverlay = ({ entries = [], onClose }) => {
 };
 
 export default LeaderboardOverlay;
-/**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/

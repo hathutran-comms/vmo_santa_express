@@ -4,17 +4,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { getFunctions } from 'firebase/functions';
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 const firebaseConfig = {
   apiKey: import.meta.env.FIREBASE_API_KEY,
   authDomain: import.meta.env.FIREBASE_AUTH_DOMAIN,
@@ -31,17 +21,7 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 // Initialize Firestore
 export const db = getFirestore(app);
 
@@ -50,17 +30,7 @@ export const auth = getAuth(app);
 
 // Initialize Cloud Functions
 export const functions = getFunctions(app);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 // Ensure we have an anonymous session before any Firestore write
 let authPromise = null;
 export const ensureAnonymousAuth = () => {
@@ -75,14 +45,4 @@ export const ensureAnonymousAuth = () => {
   return authPromise;
 };
 export default app;
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/

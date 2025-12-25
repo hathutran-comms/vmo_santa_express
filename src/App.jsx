@@ -1,14 +1,4 @@
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Santa from './components/Santa';
 import PipePair from './components/Pipe';
@@ -28,34 +18,14 @@ import MobileBlock from './components/MobileBlock';
 import TimeBlock from './components/TimeBlock';
 import { savePlayerScore, getTop10Leaderboard, getPlayerHighScore, submitPipePassed, submitGiftCollected, submitGameStart } from './services/firebaseService';
 import './App.css';
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 // Audio files
 const createSound = (src) => {
   const audio = new Audio(src);
   audio.volume = 0.3;
   return audio;
 };
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 const soundFiles = {
   wing: '/assets/audio/wing.wav',
   point: '/assets/audio/point.wav',
@@ -73,17 +43,7 @@ bgMusic.loop = true;
 if (typeof window !== 'undefined') {
   window.bgMusicRef = bgMusic;
 }
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 const GRAVITY = 0.5;
 const JUMP_STRENGTH = -8;
 // Base dimensions (reference size: 500x750)
@@ -99,17 +59,7 @@ const GIFT_DROP_INTERVAL_MOBILE = 5000; // Drop gift every 5 seconds on mobile (
 const GIFT_FALL_SPEED = 2;
 const GIFT_GRAVITY = 0.3;
 const BASE_GIFT_SIZE = 60;
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 // Detect mobile device
 const detectMobileDevice = () => {
   return /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
@@ -151,17 +101,7 @@ const GAME_EXPIRATION_TIME = new Date('2025-12-25T15:00:00+07:00').getTime();
 const isGameExpired = () => {
   return Date.now() >= GAME_EXPIRATION_TIME;
 };
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
 function App() {
   const [showLoading, setShowLoading] = useState(true);
   const [showMainMenu, setShowMainMenu] = useState(false);
@@ -212,17 +152,7 @@ function App() {
   const pipesPassedRef = useRef(0);
   const giftsReceivedRef = useRef(0);
   const gameSessionIdRef = useRef(null); // Session ID để track actions real-time
-  /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+  
   // Check for game expiration every second and reload if expired
   useEffect(() => {
     const expirationCheckInterval = setInterval(() => {
@@ -256,17 +186,7 @@ function App() {
     
     return () => clearInterval(timeCheckInterval);
   }, [isMobileDevice, isMobileAllowed, isDesktopAllowed]);
-  /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+  
   // Calculate scale factors based on current game dimensions
   const scaleX = gameWidth / REFERENCE_WIDTH;
   const scaleY = gameHeight / REFERENCE_HEIGHT;
@@ -282,17 +202,7 @@ function App() {
   const santaYRef = useRef(REFERENCE_HEIGHT * 0.4);
   const bgMusicRef = useRef(bgMusic);
   const musicStartedRef = useRef(false);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Play sound helper function - creates new audio instance each time
   const playSound = useCallback((soundName) => {
     if (soundFiles[soundName]) {
@@ -316,17 +226,7 @@ function App() {
       return newState;
     });
   }, []);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Ensure background music starts on first user interaction
   useEffect(() => {
     const tryPlayMusic = () => {
@@ -344,17 +244,7 @@ function App() {
         }
       }
     };
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
     // Try on click, touch, and keydown
     window.addEventListener('click', tryPlayMusic);
     window.addEventListener('touchstart', tryPlayMusic);
@@ -366,17 +256,7 @@ function App() {
       window.removeEventListener('keydown', tryPlayMusic);
     };
   }, []);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Update santaYRef whenever santaY changes
   useEffect(() => {
     santaYRef.current = santaY;
@@ -400,17 +280,7 @@ function App() {
       setLeaderboard([]);
     }
   }, []);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Load high score from localStorage (local high score vẫn lưu local)
   useEffect(() => {
     const savedHighScore = localStorage.getItem('santaFlappyHighScore');
@@ -427,17 +297,7 @@ function App() {
     
     // Try to play immediately
     playMusic();
-    /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+    
     // Also try on first user interaction (for browsers that block autoplay)
     const handleInteraction = () => {
       playMusic();
@@ -456,17 +316,7 @@ function App() {
       document.removeEventListener('keydown', handleInteraction);
     };
   }, []);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Update game dimensions responsively
   useEffect(() => {
     const updateDimensions = () => {
@@ -505,33 +355,13 @@ function App() {
         setPipeGap(Math.round(newHeight * (BASE_PIPE_GAP / REFERENCE_HEIGHT)));
       }
     };
-    /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+    
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Save high score
   useEffect(() => {
     if (score > highScore) {
@@ -549,17 +379,7 @@ function App() {
     //   vmoId,
     //   vmoIdValid: vmoId && vmoId.trim() !== ''
     // });
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
     if (gameOver && !hasRecordedScoreRef.current && vmoId && vmoId.trim() !== '') {
       // Tính thời gian chơi
       const playTimeSeconds = gameStartTimeRef.current 
@@ -603,17 +423,7 @@ function App() {
         })
         .then((result) => {
           // console.log('[App] savePlayerScore response:', result);
-          /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+          
           if (result.success && result.score !== undefined) {
             // Sử dụng score từ server (không phải từ client)
             const serverScore = result.score;
@@ -934,17 +744,7 @@ function App() {
           return [...prevPipes, newPipe];
         });
       };
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
       // Generate first pipe after a longer delay to give player time to prepare
       const firstPipeTimeout = setTimeout(generatePipe, 3000); // 3 seconds delay
 
@@ -996,17 +796,7 @@ function App() {
           ];
         });
       };
-      /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+      
       // Spawn giftbox every 3-5 seconds randomly
       const scheduleNextGiftbox = () => {
         const delay = 3000 + Math.random() * 2000; // 3-5 seconds
@@ -1027,17 +817,7 @@ function App() {
       };
     }
   }, [gameStarted, gameOver, gameWidth, gameHeight]);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Generate decorations (similar to pipes)
   useEffect(() => {
     // Temporarily disabled decorations
@@ -1114,17 +894,7 @@ function App() {
     }
     */
   }, [gameStarted, gameOver, gameWidth]);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Generate gifts (disabled on mobile for performance)
   useEffect(() => {
     if (gameStarted && !gameOver && !isMobile) {
@@ -1163,17 +933,7 @@ function App() {
       };
     }
   }, [gameStarted, gameOver, gameWidth]);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Game loop - optimized for mobile performance
   useEffect(() => {
     if (gameStarted && !gameOver) {
@@ -1202,17 +962,7 @@ function App() {
           const currentSantaSize = BASE_SANTA_SIZE * currentScale;
           const currentPipeWidth = BASE_PIPE_WIDTH * currentScale;
           const currentGiftSize = BASE_GIFT_SIZE * currentScale;
-          /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+          
           // Scale pipe speed to maintain consistent relative speed across all screen sizes
           const scaledPipeSpeed = PIPE_SPEED * currentScale;
           
@@ -1253,17 +1003,7 @@ function App() {
             // Stop at ground level and trigger game over
             if (!gameOver) {
               setTimeout(() => setGameOver(true), 500);
-            }/**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+            }
             // Return position where bottom of hitbox touches ground
             return groundLevel - currentSantaSize + hitboxPaddingBottom;
           }
@@ -1297,17 +1037,7 @@ function App() {
             // At ground, stop velocity
             setSantaVelocity(0);
           }
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
           // Update rotation based on velocity (handle death spin)
           if (isDead) {
             // Continuous spin when dead
@@ -1363,17 +1093,7 @@ function App() {
                 // });
               }
             }
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
             // Check collision with top pipe
             if (santaRight > pipeLeft && santaLeft < pipeRight) {
               if (santaTop < pipe.topHeight) {
@@ -1413,17 +1133,7 @@ function App() {
 
             return updatedPipes;
           });
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
           // Update floating giftboxes position and check collision
           setFloatingGiftboxes((prevGiftboxes) => {
             // Use same hitbox as main collision detection
@@ -1496,17 +1206,7 @@ function App() {
               })
               .filter((giftbox) => giftbox && giftbox.x > -100); // Remove when off screen or collected
           });
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
           // Update decorations position (only on desktop)
           if (!isMobile) {
             setDecors((prevDecors) => {
@@ -1549,17 +1249,7 @@ function App() {
                 }
               });
             }
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
             // If breaking, stop falling and increment breaking time
             if (isBreaking) {
               breakingTime += 1;
@@ -1603,17 +1293,7 @@ function App() {
             });
           }
         }
-        /**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
+        
         // Continue animation loop
         animationFrameId = requestAnimationFrame(gameLoop);
       };
@@ -1645,17 +1325,7 @@ function App() {
     setShowMainMenu(false);
     setShowCredits(true);
   };
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Filter objects in viewport for better performance (only render visible objects)
   // Use larger margins to avoid recalculation overhead
   const visiblePipes = useMemo(() => {
@@ -1694,17 +1364,7 @@ function App() {
       opacity: 0.6 + Math.random() * 0.4,
     }))
   ), [isMobile]);
-/**
- 
 
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
   // Set CSS variables on document root for all components to use
   useEffect(() => {
     document.documentElement.style.setProperty('--scale', scale);
@@ -1949,14 +1609,3 @@ function App() {
 }
 
 export default App;
-/**
- 
-
-      _                _            _      _                            
-  ___| |__   ___  __ _| |_ ___ _ __| |    | | _____      __   ___  __ _ 
- / __| '_ \ / _ \/ _` | __/ _ \ '__| |    | |/ _ \ \ /\ / /  / _ \/ _` |
-| (__| | | |  __/ (_| | ||  __/ |  |_|    | | (_) \ V  V /  |  __/ (_| |
- \___|_| |_|\___|\__,_|\__\___|_|  (_)    |_|\___/ \_/\_/    \___|\__, |
-                                                                     |_|
-
-**/
