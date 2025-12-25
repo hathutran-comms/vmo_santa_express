@@ -92,7 +92,7 @@ const TimeBlock = ({ isMobileDevice }) => {
             )}
           </div>
           <p className="time-block-instruction">
-            Chơi game vui vẻ, đừng phá hoại hãy là một người văn minh :3
+            Chơi game vui vẻ
           </p>
         </div>
       </div>
